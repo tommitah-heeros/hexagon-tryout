@@ -14,7 +14,7 @@ import { getLogger } from "@adapter/http/web-server";
 
 const STATIC_CLOUD_PARAMS: InvokeCommandInput = {
   FunctionName: NOTIFICATION_FUNCTION_NAME,
-  InvocationType: "Event", // trigger something in a "notification system"
+  InvocationType: "RequestResponse",
 };
 
 // This might need a separate file that is bundled to a full lambda
@@ -45,7 +45,7 @@ export function createNotificationCloudService(): NotificationService {
       logger.info(
         `LAMBDA response - \
          \nstatus: ${response.StatusCode}\
-         \npayload: ${response.Payload}\
+         \npayload: ${Buffer.from(response.Payload ?? []).toString()}\
          \nerror: ${response.FunctionError}`,
       );
     },
