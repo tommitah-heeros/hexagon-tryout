@@ -1,15 +1,15 @@
 # hexagon tryout
 
-To install dependencies:
+To run you need: `localstack`
 
 ```bash
-bun install
+localstack start
 ```
-
-To run:
 
 ```bash
-bun run index.ts
+npm run buildNotificationLambda
 ```
 
-This project was created using `bun init` in bun v1.3.9. [Bun](https://bun.com) is a fast all-in-one JavaScript runtime.
+```bash
+bun run dev
+```
