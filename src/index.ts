@@ -1,11 +1,12 @@
 import { createNotificationCloudService } from "@adapter/cloud/serverless/notification.service";
 import { createFileSystemNoteRepository } from "@adapter/file-system/note.file-repository";
 import {
-  createFastifyServer,
+  createWebServer,
   getLogger,
   SERVER_PORT,
 } from "@adapter/http/web-server";
 import { createNote as createNoteUseCase } from "@domain/note/create";
+import { getNote as getNoteUseCase } from "@domain/note/get";
 
 const notificationService = createNotificationCloudService();
 
@@ -15,13 +16,16 @@ const createNote = createNoteUseCase({
   notificationService,
   logger: getLogger(),
 });
+const getNote = getNoteUseCase({
+  repository: noteRepository,
+});
 
-const useCases = { createNote };
-const app = createFastifyServer(useCases);
+const useCases = { createNote, getNote };
+const server = createWebServer(useCases);
 
 try {
-  await app.listen({ port: SERVER_PORT });
+  await server.listen({ port: SERVER_PORT });
 } catch (err) {
-  app.log.error(err);
+  server.log.error(err);
   process.exit(1);
 }
