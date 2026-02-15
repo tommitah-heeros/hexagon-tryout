@@ -6,7 +6,10 @@ export const SERVER_PORT = 8989;
 
 let fastify: FastifyInstance | null = null;
 
-export function createFastifyServer(createNote: CreateNote) {
+type UseCases = {
+  createNote: CreateNote;
+};
+export function createFastifyServer({ createNote }: UseCases) {
   fastify = Fastify({ logger: true });
 
   fastify.get("/", (_req, _res) => {
