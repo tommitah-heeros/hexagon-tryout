@@ -2,20 +2,20 @@ import {
   LambdaClient,
   InvokeCommand,
   type InvokeCommandInput,
-} from "@aws-sdk/client-lambda";
-import type { NotificationService } from "@port/notification.service";
+} from '@aws-sdk/client-lambda'
+import type { NotificationService } from '@port/notification.service'
 import {
   LOCAL_STACK_CREDS,
   LOCAL_STACK_ENDPOINT,
   LOCAL_STACK_REGION,
   NOTIFICATION_FUNCTION_NAME,
-} from "./notification.infra";
-import { getLogger } from "@adapter/http/web-server";
+} from './notification.infra'
+import { getLogger } from '@adapter/http/web-server'
 
 const STATIC_CLOUD_PARAMS: InvokeCommandInput = {
   FunctionName: NOTIFICATION_FUNCTION_NAME,
-  InvocationType: "RequestResponse",
-};
+  InvocationType: 'RequestResponse',
+}
 
 // This might need a separate file that is bundled to a full lambda
 // https://github.com/awsdocs/aws-doc-sdk-examples/tree/main/javascriptv3/example_code/lambda/actions
@@ -30,7 +30,7 @@ export function createNotificationCloudService(): NotificationService {
     endpoint: LOCAL_STACK_ENDPOINT,
     region: LOCAL_STACK_REGION,
     credentials: LOCAL_STACK_CREDS,
-  });
+  })
 
   return {
     async send(data: Record<string, unknown>) {
@@ -39,15 +39,15 @@ export function createNotificationCloudService(): NotificationService {
           ...STATIC_CLOUD_PARAMS,
           Payload: JSON.stringify(data),
         }),
-      );
+      )
 
-      const logger = getLogger();
+      const logger = getLogger()
       logger.info(
         `LAMBDA response - \
          \nstatus: ${response.StatusCode}\
          \npayload: ${Buffer.from(response.Payload ?? []).toString()}\
          \nerror: ${response.FunctionError}`,
-      );
+      )
     },
-  };
+  }
 }
