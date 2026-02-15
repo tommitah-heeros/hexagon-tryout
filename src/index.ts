@@ -2,13 +2,11 @@ import { createNotificationCloudFunction } from "@adapter/cloud/serverless.notif
 import { createFileSystemNoteRepository } from "@adapter/file-system/note.file-repository";
 import { createFastifyServer, SERVER_PORT } from "@adapter/http/web-server";
 import { createNote as createNoteUseCase } from "@domain/note/create";
-import { createNotification as createNotificationUseCase } from "@domain/notification/create";
-
-const noteRepository = await createFileSystemNoteRepository();
-const createNote = createNoteUseCase(noteRepository);
 
 const notificationService = createNotificationCloudFunction();
-const createNotification = createNotificationUseCase(notificationService);
+
+const noteRepository = await createFileSystemNoteRepository();
+const createNote = createNoteUseCase(noteRepository, notificationService);
 
 const useCases = { createNote };
 const app = createFastifyServer(useCases);
