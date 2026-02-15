@@ -4,14 +4,18 @@ import z from "zod";
 
 export const SERVER_PORT = 8989;
 
-let fastify: FastifyInstance | null = null;
+const fastify: FastifyInstance = Fastify({
+  logger: {
+    transport: {
+      target: "pino-pretty",
+    },
+  },
+});
 
 type UseCases = {
   createNote: CreateNote;
 };
 export function createFastifyServer({ createNote }: UseCases) {
-  fastify = Fastify({ logger: true });
-
   fastify.get("/", (_req, _res) => {
     fastify!.log.info("ping");
     return "check health: ok!";
@@ -22,6 +26,8 @@ export function createFastifyServer({ createNote }: UseCases) {
     const body = z
       .object({ content: z.string(), title: z.string() })
       .parse(req.body);
+
+    req.log.info(`Here be the request body: ${body}`);
 
     try {
       const note = await createNote.execute(body);
@@ -35,12 +41,6 @@ export function createFastifyServer({ createNote }: UseCases) {
   return fastify;
 }
 
-export async function listen() {
-  if (fastify === null) fastify = Fastify({ logger: true });
-  try {
-    await fastify.listen({ port: SERVER_PORT });
-  } catch (err) {
-    fastify.log.error(err);
-    process.exit(1);
-  }
+export function getLogger() {
+  return fastify.log;
 }

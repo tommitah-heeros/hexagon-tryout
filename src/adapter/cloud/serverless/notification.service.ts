@@ -4,9 +4,16 @@ import {
   type InvokeCommandInput,
 } from "@aws-sdk/client-lambda";
 import type { NotificationService } from "@port/notification.service";
+import {
+  LOCAL_STACK_CREDS,
+  LOCAL_STACK_ENDPOINT,
+  LOCAL_STACK_REGION,
+  NOTIFICATION_FUNCTION_NAME,
+} from "./notification.infra";
+import { getLogger } from "@adapter/http/web-server";
 
 const STATIC_CLOUD_PARAMS: InvokeCommandInput = {
-  FunctionName: "some-cloud-function",
+  FunctionName: NOTIFICATION_FUNCTION_NAME,
   InvocationType: "Event", // trigger something in a "notification system"
 };
 
@@ -17,17 +24,29 @@ const STATIC_CLOUD_PARAMS: InvokeCommandInput = {
 // }
 
 // could possibly do IaC style and rollout all the structure using code instead of template.yaml.
-// would require heavy use of env checking
-export function createNotificationCloudFunction(): NotificationService {
-  const client = new LambdaClient();
+// in real life would probably require heavy use of env checking
+export function createNotificationCloudService(): NotificationService {
+  const client = new LambdaClient({
+    endpoint: LOCAL_STACK_ENDPOINT,
+    region: LOCAL_STACK_REGION,
+    credentials: LOCAL_STACK_CREDS,
+  });
 
   return {
     async send(data: Record<string, unknown>) {
-      await client.send(
+      const response = await client.send(
         new InvokeCommand({
           ...STATIC_CLOUD_PARAMS,
           Payload: JSON.stringify(data),
         }),
+      );
+
+      const logger = getLogger();
+      logger.info(
+        `LAMBDA response - \
+         \nstatus: ${response.StatusCode}\
+         \npayload: ${response.Payload}\
+         \nerror: ${response.FunctionError}`,
       );
     },
   };

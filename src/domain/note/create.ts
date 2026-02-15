@@ -1,13 +1,20 @@
 import type { Note, NoteCreateParams } from "./Note";
 import type { NotificationService } from "@port/notification.service";
 import type { NoteRepository } from "@port/note.repository";
+import type { Logger } from "@port/logger";
 
-export function createNote(
-  repository: NoteRepository,
-  notificationService: NotificationService,
-) {
+export function createNote({
+  repository,
+  notificationService,
+  logger,
+}: {
+  repository: NoteRepository;
+  notificationService: NotificationService;
+  logger: Logger;
+}) {
   return {
     async execute({ title, content }: NoteCreateParams) {
+      logger.info("Creating note");
       const note: Note = {
         id: crypto.randomUUID(),
         title,
@@ -25,6 +32,7 @@ export function createNote(
         message: "Note was created!",
       });
 
+      logger.info("Note created.");
       return note;
     },
   };
