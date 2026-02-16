@@ -3,6 +3,9 @@ import type { NotificationService } from '@port/notification.service'
 import type { NoteRepository } from '@port/note.repository'
 import type { Logger } from '@port/logger'
 
+export type CreateNote = {
+  execute: (params: NoteCreateParams) => Promise<Note>
+}
 export function createNote({
   repository,
   notificationService,
@@ -11,7 +14,7 @@ export function createNote({
   repository: NoteRepository
   notificationService: NotificationService
   logger: Logger
-}) {
+}): CreateNote {
   return {
     async execute({ title, content }: NoteCreateParams) {
       logger.info('Creating note')
@@ -37,5 +40,3 @@ export function createNote({
     },
   }
 }
-
-export type CreateNote = ReturnType<typeof createNote>
