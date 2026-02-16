@@ -7,6 +7,7 @@ import {
   GetFunctionCommand,
   UpdateFunctionCodeCommand,
 } from '@aws-sdk/client-lambda'
+import { build } from 'bun'
 
 export const LOCAL_STACK_ENDPOINT = 'http://localhost:4566'
 export const LOCAL_STACK_REGION = 'eu-west-1'
@@ -25,7 +26,18 @@ const NOTIFICATION_FUNCTION_ZIP_PATH =
   './src/adapter/cloud/serverless/notification-function.zip'
 const LAMBDA_SOURCE_PATH = './src/adapter/cloud/serverless/notification.lambda'
 
+async function bundle() {
+  await build({
+    entrypoints: [`${LAMBDA_SOURCE_PATH}/index.ts`],
+    outdir: LAMBDA_SOURCE_PATH,
+    target: 'node',
+    format: 'esm',
+    minify: true,
+  })
+}
+
 async function createLambdaZip() {
+  await bundle()
   const proc = Bun.spawn(['zip', '-r', '../notification-function.zip', '.'], {
     cwd: LAMBDA_SOURCE_PATH,
   })
@@ -64,13 +76,18 @@ async function lambdaExists() {
   }
 }
 
-if (await lambdaExists()) {
-  await client.send(
-    new UpdateFunctionCodeCommand({
-      FunctionName: NOTIFICATION_FUNCTION_NAME,
-      ZipFile: await getLambdaZipfile(),
-    }),
-  )
-} else {
-  await client.send(new CreateFunctionCommand(NOTIFICATION_FUNCTION_CONFIG))
+export async function uploadCloudFunction() {
+  if (await lambdaExists()) {
+    await client.send(
+      new UpdateFunctionCodeCommand({
+        FunctionName: NOTIFICATION_FUNCTION_NAME,
+        ZipFile: await getLambdaZipfile(),
+      }),
+    )
+  } else {
+    await client.send(new CreateFunctionCommand(NOTIFICATION_FUNCTION_CONFIG))
+  }
 }
+
+// runnable as a "script"
+await uploadCloudFunction()
